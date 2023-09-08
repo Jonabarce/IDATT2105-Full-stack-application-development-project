@@ -1,0 +1,76 @@
+stages:
+  - build-frontend
+  - build-and-test-backend
+  - test-frontend
+
+variables:
+  SPRING_PROFILES_ACTIVE: test
+  SPRING_DATASOURCE_URL: jdbc:mysql://mysql-ait.stud.idi.ntnu.no:3306/edvarso
+  SPRING_DATASOURCE_USERNAME: spring.datasource.username=edvarso
+  SPRING_DATASOURCE_PASSWORD: 5Tm9UfCjx
+
+build-frontend:
+  stage: build-frontend
+  image: node:latest
+  script:
+    - cd Frontend/ecom
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - Frontend/ecom/dist
+  cache:
+    paths:
+      - Frontend/ecom/node_modules
+
+build-and-test-backend:
+  stage: build-and-test-backend
+  image: maven:latest
+  script:
+    - cd Backend/ECOMBack
+    - mvn clean package
+  artifacts:
+    paths:
+      - Backend/ECOMBack/target/ECOMBack-0.0.1-SNAPSHOT.jar
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - Backend/ECOMBack/.m2/repository
+
+test-frontend:
+  stage: test-frontend
+  image: ubuntu:latest
+  before_script:
+    - apt-get update
+    - apt-get install -y curl
+    - curl -sL https://deb.nodesource.com/setup_14.x | bash -
+    - apt-get install -y nodejs
+    - apt-get install -y openjdk-17-jdk
+    - apt-get install -y xvfb
+    - apt-get install -y libgtk-3-0 libgconf-2-4 libgbm1 libnotify-bin xdg-utils
+    - cd Frontend/ecom
+    - npm install axios
+    - npm install cypress --save-dev
+    - npm install
+  script:
+    - export SPRING_PROFILES_ACTIVE=central
+    - export SPRING_DATASOURCE_URL=jdbc:mysql://mysql-ait.stud.idi.ntnu.no:3306/manishma
+    - export SPRING_DATASOURCE_USERNAME=manishma
+    - export SPRING_DATASOURCE_PASSWORD=Xbt.u2J4v
+    - cd ../../Backend/ECOMBack
+    - java -jar target/ECOMBack-0.0.1-SNAPSHOT.jar &
+    - sleep 60
+    - cd ../../Frontend/ecom
+    - npm install
+    - npm run dev &
+    - sleep 30
+    - npm run test:e2e:ci
+  artifacts:
+    when: always
+    paths:
+      - Frontend/ecom/cypress/videos
+      - Frontend/ecom/cypress/screenshots
+  cache:
+    paths:
+      - Frontend/ecom/node_modules
+      - Backend/ECOMBack/.m2
