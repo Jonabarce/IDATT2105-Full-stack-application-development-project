@@ -43,7 +43,7 @@ The IDE shoul automatically import all necessary Maven dependencies, based on th
  mvn clean install
  ```
 
-In the application-central.properties class, you can specify which database to use with the project (url, username and password). To get access to the centralized IDI MySQL database, please reach me at karo.f.mahmoud@gmail.com
+In the application-central.properties class, you can specify which database to use with the project (url, username and password). To get access to the centralized IDI MySQL database, please reach me at javevang1@gmail.com
 
 ![application-central.properties](./readmeImages/applicationPropertiesCentral.png)
 <br><br>
